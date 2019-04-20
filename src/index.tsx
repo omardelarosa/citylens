@@ -241,4 +241,9 @@ async function mountReact() {
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
+mountReact();
 init();
+
+window.onload = () => {
+    init();
+};
