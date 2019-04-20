@@ -243,7 +243,3 @@ serviceWorker.unregister();
 
 mountReact();
 init();
-
-window.onload = () => {
-    init();
-};
