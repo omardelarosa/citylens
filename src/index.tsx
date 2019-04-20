@@ -44,7 +44,17 @@ async function loadAssets(pathToAsset: string) {
 }
 
 async function init() {
-    const $el: Element | null = document.querySelector(AR_CONTAINER_SELECTOR);
+    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+    const vh = window.innerHeight * 0.01;
+
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    const $el: HTMLDivElement | null = document.querySelector(
+        AR_CONTAINER_SELECTOR,
+    );
+
+    // const $el = document.body;
     if (!$el) {
         console.warn('No AR Container found!');
         return;
@@ -56,11 +66,21 @@ async function init() {
     });
 
     renderer.setClearColor(new THREE.Color('lightgrey'), 0);
-    // renderer.setPixelRatio( 1/2 );
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(1 / 2);
+    renderer.setSize($el.clientWidth, $el.clientHeight);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0px';
     renderer.domElement.style.left = '0px';
+
+    function updateRendererSize() {
+        if (!$el) {
+            return;
+        }
+        renderer.setSize($el.clientWidth, $el.clientHeight);
+    }
+
+    window.addEventListener('resize', updateRendererSize);
+    window.addEventListener('load', updateRendererSize);
 
     $el.appendChild(renderer.domElement);
 
