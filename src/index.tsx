@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+const queryString = require('query-string');
 
 interface CustomWindow extends Window {
     AFRAME: any; // A Frame library loaded from static template
@@ -23,6 +24,8 @@ let loader;
 
 const DONUT_MODEL_PATH = 'Donut.glb';
 const AR_CONTAINER_SELECTOR = '.ar-container';
+
+const queryParams = queryString.parse(window.location.search);
 
 async function loadAssets(pathToAsset: string) {
     return new Promise<{ scene?: any }>(function(resolve, reject) {
@@ -67,7 +70,7 @@ async function init() {
 
     renderer.setClearColor(new THREE.Color('lightgrey'), 0);
     renderer.setPixelRatio(1 / 2);
-    renderer.setSize($el.clientWidth, $el.clientHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0px';
     renderer.domElement.style.left = '0px';
@@ -76,7 +79,7 @@ async function init() {
         if (!$el) {
             return;
         }
-        renderer.setSize($el.clientWidth, $el.clientHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     window.addEventListener('resize', updateRendererSize);
@@ -225,15 +228,21 @@ async function init() {
      */
 
     // Add stats
-    const stats = new Stats();
 
-    // Append Stats object to the DOM
-    $el.appendChild(stats.dom);
+    let stats: any;
+    if (queryParams.debug) {
+        stats = new Stats();
+
+        // Append Stats object to the DOM
+        $el.appendChild(stats.dom);
+    }
 
     // render the scene
     onRenderFcts.push(function() {
         renderer.render(scene, camera);
-        stats.update();
+        if (stats) {
+            stats.update();
+        }
     });
 
     // run the rendering loop
