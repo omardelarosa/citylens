@@ -22,7 +22,8 @@ const Tx = THREEx;
 const Stats = window.Stats;
 let loader;
 
-const DONUT_MODEL_PATH = 'Donut.glb';
+const MODEL_PATH = 'LowPolyChar.glb';
+const MODEL_SCALE = 0.15;
 const AR_CONTAINER_SELECTOR = '.ar-container';
 
 const queryParams = queryString.parse(window.location.search);
@@ -195,9 +196,12 @@ async function init() {
      */
 
     // Loads a custom asset
-    const gltf = await loadAssets(DONUT_MODEL_PATH);
+    const gltf = await loadAssets(MODEL_PATH);
     const arWorldRoot = smoothedRoot;
     smoothedRoot.add(gltf.scene);
+    gltf.scene.scale.x = MODEL_SCALE;
+    gltf.scene.scale.y = MODEL_SCALE;
+    gltf.scene.scale.z = MODEL_SCALE;
 
     // Loading a test object
     // // add a torus knot
@@ -218,8 +222,10 @@ async function init() {
     // arWorldRoot.add(mesh);
 
     onRenderFcts.push(function() {
-        gltf.scene.rotation.x += 0.1;
-        gltf.scene.rotation.z += 0.1;
+        // TODO: add further animations here
+
+        // gltf.scene.rotation.x += 0.1;
+        gltf.scene.rotation.y += 0.1;
     });
 
     /**
