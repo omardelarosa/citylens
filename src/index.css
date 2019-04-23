@@ -16,6 +16,7 @@ code {
 .App {
     width: 100%;
     position: absolute;
+    z-index: 2;
 }
 
 body,
@@ -24,11 +25,47 @@ html {
     margin: 0;
 }
 
-.App h1 {
-    text-align: right;
+.App {
+    background: #000;
     color: #fff;
-    padding: 20px;
+    margin: 0;
+}
+
+.App a {
+    color: #ff0000;
+}
+
+.App a:visited {
+    color: #990000;
+}
+
+.App h1 {
     font-size: 2.5em;
+    padding: 5px 15px 5px 15px;
+}
+
+.App h1.expanded {
+}
+
+.App h1.collapsed {
+}
+
+.flexy-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.collapsed .toggleButton {
+}
+
+.header.expanded .titleText {
+}
+
+.info-box {
+    padding: 5px 15px 5px 15px;
+    font-size: 1em;
 }
 
 .ar-container {
