@@ -10,6 +10,7 @@ interface CustomWindow extends Window {
     THREE: any;
     THREEx: any; // JS ARToolkit
     Stats: any; // ThreeJS Stats plugin
+    ARController: any; // jsartoolkit5
 }
 
 declare let window: CustomWindow;
@@ -143,10 +144,14 @@ async function init() {
     const arToolkitContext = new Tx.ArToolkitContext({
         cameraParametersUrl: Tx.ArToolkitContext.baseURL + 'camera_para.dat',
         detectionMode: 'mono',
-        maxDetectionRate: 30,
+        maxDetectionRate: 5,
         canvasWidth: 80 * 3,
         canvasHeight: 60 * 3,
     });
+
+    //     arToolkitContext.arController.addEventListener('getMarker', (ev: any) => {
+    //         console.log('MarkerGet', ev.data);
+    //     });
 
     // initialize it
     arToolkitContext.init(function onCompleted() {

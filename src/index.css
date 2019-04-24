@@ -72,9 +72,22 @@ html {
     width: 100vw;
     height: 100vh;
     position: fixed;
+    overflow: hidden;
     /* width: 100%; */
     /* position: absolute; */
     /* height: 100vh; */
     /* height: calc(var(--vh, 1vh) * 100); */
     /* display: block; */
+}
+
+video {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+canvas {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
