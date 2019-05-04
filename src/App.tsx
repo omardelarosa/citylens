@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-const APP_TITLE = 'lens';
+const APP_TITLE = 'MTA tips';
 const AUTHOR_URL = 'https://omardelarosa.com';
 
 interface IAppState {

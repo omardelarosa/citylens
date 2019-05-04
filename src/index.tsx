@@ -42,13 +42,13 @@ const AR_CONTAINER_SELECTOR = '.ar-container';
 const MODEL_MAPPINGS: IModelConfig[] = [
     {
         path: 'LowPolyCharGreen.glb',
-        barcodeId: 1,
+        barcodeId: 0,
         positionOffset: MODEL_OFFSET,
         scale: MODEL_SCALE,
     },
     {
         path: 'LowPolyCharRed.glb',
-        barcodeId: 10,
+        barcodeId: 1,
         positionOffset: MODEL_OFFSET,
         scale: MODEL_SCALE,
     },
