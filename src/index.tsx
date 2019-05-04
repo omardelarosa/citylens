@@ -13,13 +13,14 @@ interface CustomWindow extends Window {
     ARController: any; // jsartoolkit5
 }
 
-type Vector3 = [number, number, number];
+type Vector3 = [number, number, number]; // x, y, z
 
 interface IModelConfig {
     path: string; // File Path
     barcodeId: number; // Barcode ID
-    positionOffset: Vector3; // Relative space offset Vector3
+    position: Vector3; // Relative space offset Vector3
     scale: Vector3; // x, y, z scale
+    rotation: Vector3; // x, y, z
 }
 
 declare let window: CustomWindow;
@@ -32,25 +33,29 @@ const Tx = THREEx;
 const Stats = window.Stats;
 let loader;
 
-const MODEL_PATH_GREEN = 'LowPolyChar.glb';
-const MODEL_PATH_RED = 'LowPolyCharRed.glb';
-const MODEL_OFFSET: Vector3 = [0, 0, 0];
-const MODEL_SCALE: Vector3 = [0.15, 0.15, 0.15];
+// const MODEL_PATH_GREEN = 'LowPolyChar.glb';
+// const MODEL_PATH_RED = 'LowPolyCharRed.glb';
+const MODEL_OFFSET: Vector3 = [0, 2, 4];
+const MODEL_SCALE: Vector3 = [0.2, 0.2, 0.2];
+const MODEL_ROTATION: Vector3 = [0, 0, 0];
+const MODEL_ROTATION_SIDE_WAYS: Vector3 = [4.5, 0, 0];
 const AR_CONTAINER_SELECTOR = '.ar-container';
 
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
     {
-        path: 'LowPolyCharGreen.glb',
+        path: 'models/LowPolyCharGreen.glb',
         barcodeId: 0,
-        positionOffset: MODEL_OFFSET,
+        position: [0, 0, 4],
         scale: MODEL_SCALE,
+        rotation: MODEL_ROTATION_SIDE_WAYS,
     },
     {
-        path: 'LowPolyCharRed.glb',
+        path: 'models/MTA_Platform_Spread.glb',
         barcodeId: 1,
-        positionOffset: MODEL_OFFSET,
+        position: [0, 2, 4],
         scale: MODEL_SCALE,
+        rotation: MODEL_ROTATION_SIDE_WAYS,
     },
 ];
 
@@ -221,6 +226,8 @@ async function init() {
             barcodeId,
             path,
             scale: [scaleX, scaleY, scaleZ],
+            rotation: [rotX, rotY, rotZ],
+            position: [posX, posY, posZ],
         } = mConfig;
         const markerRoot = new T.Group();
         scene.add(markerRoot);
@@ -260,13 +267,20 @@ async function init() {
         gltf.scene.scale.y = scaleY;
         gltf.scene.scale.z = scaleZ;
 
+        gltf.scene.rotation.x = rotX;
+        gltf.scene.rotation.y = rotY;
+        gltf.scene.rotation.z = rotZ;
+
+        gltf.scene.position.x = posX;
+        gltf.scene.position.y = posY;
+        gltf.scene.position.z = posZ;
+
         // Step through animation
         onRenderFcts.push(function() {
             // TODO: add further animations here
-
             // Applies a basic rotation animation
             // gltf.scene.rotation.x += 0.1;
-            gltf.scene.rotation.y += 0.1;
+            // gltf.scene.rotation.y += 0.1;
         });
 
         return mConfig;
