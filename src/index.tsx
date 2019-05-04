@@ -13,6 +13,15 @@ interface CustomWindow extends Window {
     ARController: any; // jsartoolkit5
 }
 
+type Vector3 = [number, number, number];
+
+interface IModelConfig {
+    path: string; // File Path
+    barcodeId: number; // Barcode ID
+    positionOffset: Vector3; // Relative space offset Vector3
+    scale: Vector3; // x, y, z scale
+}
+
 declare let window: CustomWindow;
 const AFRAME = window.AFRAME;
 const THREE = window.THREE;
@@ -23,9 +32,27 @@ const Tx = THREEx;
 const Stats = window.Stats;
 let loader;
 
-const MODEL_PATH = 'LowPolyChar.glb';
-const MODEL_SCALE = 0.15;
+const MODEL_PATH_GREEN = 'LowPolyChar.glb';
+const MODEL_PATH_RED = 'LowPolyCharRed.glb';
+const MODEL_OFFSET: Vector3 = [0, 0, 0];
+const MODEL_SCALE: Vector3 = [0.15, 0.15, 0.15];
 const AR_CONTAINER_SELECTOR = '.ar-container';
+
+// Define all models and their respective barcodes here
+const MODEL_MAPPINGS: IModelConfig[] = [
+    {
+        path: 'LowPolyCharGreen.glb',
+        barcodeId: 1,
+        positionOffset: MODEL_OFFSET,
+        scale: MODEL_SCALE,
+    },
+    {
+        path: 'LowPolyCharRed.glb',
+        barcodeId: 10,
+        positionOffset: MODEL_OFFSET,
+        scale: MODEL_SCALE,
+    },
+];
 
 const queryParams = queryString.parse(window.location.search);
 
@@ -102,6 +129,11 @@ async function init() {
     /*
      * AR Toolkit
      *
+     * This is an interface for the arToolkit itself.
+     *
+     * JS Docs: https://github.com/artoolkit/jsartoolkit5
+     *
+     * non-JS API Docs: https://github.com/artoolkit/artoolkit-docs
      */
 
     const arToolkitSource = new Tx.ArToolkitSource({
@@ -122,6 +154,7 @@ async function init() {
 
     // handle resize
     window.addEventListener('resize', function() {
+        // onInit();
         onResize();
     });
 
@@ -135,6 +168,17 @@ async function init() {
         }
     }
 
+    function onInit() {
+        // arToolkitSource.setProjectionNearPlane(1);
+        // arToolkitSource.setProjectionFarPlane(1000);
+        arToolkitSource.setPatternDetectionMode(
+            arToolkitSource.CONSTANTS.AR_MATRIX_CODE_DETECTION,
+        );
+        arToolkitSource.setMatrixCodeType(
+            arToolkitSource.CONSTANTS.AR_MATRIX_CODE_3x3,
+        );
+    }
+
     /**
      * AR Toolkit Context
      *
@@ -143,7 +187,8 @@ async function init() {
     // create atToolkitContext
     const arToolkitContext = new Tx.ArToolkitContext({
         cameraParametersUrl: Tx.ArToolkitContext.baseURL + 'camera_para.dat',
-        detectionMode: 'mono',
+        detectionMode: 'mono_and_matrix',
+        matrixCodeType: '3x3',
         maxDetectionRate: 5,
         canvasWidth: 80 * 3,
         canvasHeight: 60 * 3,
@@ -160,9 +205,9 @@ async function init() {
     });
 
     // update artoolkit on every frame
-    onRenderFcts.push(function() {
+    onRenderFcts.push(function(...args: any[]) {
         if (arToolkitSource.ready === false) return;
-
+        // console.log('Update:', args);
         arToolkitContext.update(arToolkitSource.domElement);
     });
 
@@ -171,67 +216,65 @@ async function init() {
      *
      */
 
-    const markerRoot = new T.Group();
-    scene.add(markerRoot);
-    const artoolkitMarker = new Tx.ArMarkerControls(
-        arToolkitContext,
-        markerRoot,
-        {
-            type: 'pattern',
-            patternUrl: Tx.ArToolkitContext.baseURL + 'patt.hiro',
-            // TODO: swap patterns
-        },
-    );
+    async function makeMarkerForModel(mConfig: IModelConfig) {
+        const {
+            barcodeId,
+            path,
+            scale: [scaleX, scaleY, scaleZ],
+        } = mConfig;
+        const markerRoot = new T.Group();
+        scene.add(markerRoot);
 
-    // build a smoothedControls
-    const smoothedRoot = new THREE.Group();
-    scene.add(smoothedRoot);
-    var smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
-        lerpPosition: 0.4,
-        lerpQuaternion: 0.3,
-        lerpScale: 1,
-    });
-    onRenderFcts.push(function(delta?: any) {
-        smoothedControls.update(markerRoot);
-    });
+        // Configure marker
+        const artoolkitMarker = new Tx.ArMarkerControls(
+            arToolkitContext,
+            markerRoot,
+            {
+                // type: 'pattern',
+                barcodeValue: barcodeId,
+                type: 'barcode',
+                // changeMatrixMode: 'modelViewMatrix',
+                // patternUrl: Tx.ArToolkitContext.baseURL + 'patt.hiro',
+                // TODO: swap patterns
+            },
+        );
 
-    /**
-     * Add Object to the scene
-     *
-     */
+        // build a smoothedControls
+        const smoothedRoot = new THREE.Group();
+        scene.add(smoothedRoot);
+        const smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
+            lerpPosition: 0.4,
+            lerpQuaternion: 0.3,
+            lerpScale: 1,
+        });
 
-    // Loads a custom asset
-    const gltf = await loadAssets(MODEL_PATH);
-    const arWorldRoot = smoothedRoot;
-    smoothedRoot.add(gltf.scene);
-    gltf.scene.scale.x = MODEL_SCALE;
-    gltf.scene.scale.y = MODEL_SCALE;
-    gltf.scene.scale.z = MODEL_SCALE;
+        // Render callback
+        onRenderFcts.push(function(delta?: any) {
+            smoothedControls.update(markerRoot);
+        });
 
-    // Loading a test object
-    // // add a torus knot
-    // let geometry = new THREE.CubeGeometry(1, 1, 1);
-    // let material = new THREE.MeshNormalMaterial({
-    //     transparent: true,
-    //     opacity: 0.5,
-    //     side: THREE.DoubleSide,
-    // });
-    // let mesh = new THREE.Mesh(geometry, material);
-    // mesh.position.y = geometry.parameters.height / 2;
-    // arWorldRoot.add(mesh);
+        // Load GLTF file
+        const gltf = await loadAssets(path);
+        smoothedRoot.add(gltf.scene);
+        gltf.scene.scale.x = scaleX;
+        gltf.scene.scale.y = scaleY;
+        gltf.scene.scale.z = scaleZ;
 
-    // geometry = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 16);
-    // material = new THREE.MeshNormalMaterial();
-    // mesh = new THREE.Mesh(geometry, material);
-    // mesh.position.y = 0.5;
-    // arWorldRoot.add(mesh);
+        // Step through animation
+        onRenderFcts.push(function() {
+            // TODO: add further animations here
 
-    onRenderFcts.push(function() {
-        // TODO: add further animations here
+            // Applies a basic rotation animation
+            // gltf.scene.rotation.x += 0.1;
+            gltf.scene.rotation.y += 0.1;
+        });
 
-        // gltf.scene.rotation.x += 0.1;
-        gltf.scene.rotation.y += 0.1;
-    });
+        return mConfig;
+    }
+
+    console.log('Mappings', MODEL_MAPPINGS);
+    const models = await Promise.all(MODEL_MAPPINGS.map(makeMarkerForModel));
+    console.log('Models assigned:', models);
 
     /**
      * Render Everything to the page
