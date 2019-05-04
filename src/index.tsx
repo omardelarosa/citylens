@@ -21,6 +21,27 @@ interface IModelConfig {
     position: Vector3; // Relative space offset Vector3
     scale: Vector3; // x, y, z scale
     rotation: Vector3; // x, y, z
+    animationName?: string;
+}
+
+interface IMesh {
+    scene?: {
+        position: { x: number; y: number; z: number };
+        rotation: { x: number; y: number; z: number };
+        scale: { x: number; y: number; z: number };
+    };
+    animations?: any[];
+}
+
+type IClip = any;
+
+interface IAnimation {
+    play: () => void;
+}
+
+interface IAnimationMixer {
+    clipAction: (a: IClip) => IAnimation;
+    update: (d: number) => void;
 }
 
 declare let window: CustomWindow;
@@ -65,16 +86,17 @@ const MODEL_MAPPINGS: IModelConfig[] = [
     {
         path: 'models/LowPolyCharGreen.glb',
         barcodeId: 0,
-        position: [0, 0, 4],
+        position: [2, 0, 4.5],
         scale: MODEL_SCALE,
         rotation: MODEL_ROTATION_SIDE_WAYS,
     },
     {
         path: 'models/MTA_Platform_Spread.glb',
         barcodeId: 1,
-        position: [0, 2, 4],
+        position: [0, 1, 4.5],
         scale: MODEL_SCALE,
         rotation: MODEL_ROTATION_SIDE_WAYS,
+        animationName: 'Spread',
     },
 ];
 
@@ -85,10 +107,10 @@ async function loadAssets(pathToAsset: string) {
         loader = new THREE.GLTFLoader();
         loader.load(
             pathToAsset,
-            (gltf: { scene: any }) => {
-                resolve(gltf);
+            (mesh: { scene: any }) => {
+                resolve(mesh);
                 // Usage:
-                // scene.add(gltf.scene);
+                // scene.add(mesh.scene);
             },
             undefined,
             (error: Error) => {
@@ -248,6 +270,7 @@ async function init() {
             scale: [scaleX, scaleY, scaleZ],
             rotation: [rotX, rotY, rotZ],
             position: [posX, posY, posZ],
+            animationName,
         } = mConfig;
         const markerRoot = new T.Group();
         scene.add(markerRoot);
@@ -281,26 +304,56 @@ async function init() {
         });
 
         // Load GLTF file
-        const gltf = await loadAssets(path);
-        smoothedRoot.add(gltf.scene);
-        gltf.scene.scale.x = scaleX;
-        gltf.scene.scale.y = scaleY;
-        gltf.scene.scale.z = scaleZ;
+        const mesh: IMesh = await loadAssets(path);
+        smoothedRoot.add(mesh.scene);
+        if (mesh.scene) {
+            mesh.scene.scale.x = scaleX;
+            mesh.scene.scale.y = scaleY;
+            mesh.scene.scale.z = scaleZ;
 
-        gltf.scene.rotation.x = rotX;
-        gltf.scene.rotation.y = rotY;
-        gltf.scene.rotation.z = rotZ;
+            mesh.scene.rotation.x = rotX;
+            mesh.scene.rotation.y = rotY;
+            mesh.scene.rotation.z = rotZ;
 
-        gltf.scene.position.x = posX;
-        gltf.scene.position.y = posY;
-        gltf.scene.position.z = posZ;
+            mesh.scene.position.x = posX;
+            mesh.scene.position.y = posY;
+            mesh.scene.position.z = posZ;
+        } else {
+            console.warn('Could not load model: ', mConfig);
+            return mConfig;
+        }
+
+        let mixer: IAnimationMixer | null = null;
+        // Play first animation
+        if (mesh.animations && mesh.animations.length && animationName) {
+            mixer = new THREE.AnimationMixer(mesh);
+            const clip = THREE.AnimationClip.findByName(
+                mesh.animations,
+                animationName,
+            );
+            console.log(
+                'Using Animation: ',
+                animationName,
+                ' for mesh: ',
+                mConfig,
+            );
+            if (mixer) {
+                const action = mixer.clipAction(clip);
+                action.play();
+            }
+        }
 
         // Step through animation
-        onRenderFcts.push(function() {
+        onRenderFcts.push(function(delta: any) {
             // TODO: add further animations here
             // Applies a basic rotation animation
-            // gltf.scene.rotation.x += 0.1;
-            // gltf.scene.rotation.y += 0.1;
+            // mesh.scene.rotation.x += 0.1;
+            // mesh.scene.rotation.y += 0.1;
+            // TODO: Complete playing the animation
+            // console.log('Delta', delta);
+            // if (mixer) {
+            //     mixer.update(delta);
+            // }
         });
 
         return mConfig;
