@@ -31,7 +31,17 @@ const T = THREE;
 const THREEx = window.THREEx;
 const Tx = THREEx;
 const Stats = window.Stats;
+
+// Get window dimensions
+const W = window.innerWidth;
+const H = window.innerHeight;
+
+const W_SCALE = 1.0;
+const H_SCALE = 1.0;
+
 let loader;
+
+const ASPECT_RATIO = H / W;
 
 // const MODEL_PATH_GREEN = 'LowPolyChar.glb';
 // const MODEL_PATH_RED = 'LowPolyCharRed.glb';
@@ -40,6 +50,15 @@ const MODEL_SCALE: Vector3 = [0.2, 0.2, 0.2];
 const MODEL_ROTATION: Vector3 = [0, 0, 0];
 const MODEL_ROTATION_SIDE_WAYS: Vector3 = [4.5, 0, 0];
 const AR_CONTAINER_SELECTOR = '.ar-container';
+
+const DISPLAY_HEIGHT = H;
+const DISPLAY_WIDTH = W;
+
+const SOURCE_HEIGHT = H;
+const SOURCE_WIDTH = W;
+
+const CANVAS_HEIGHT = H;
+const CANVAS_WIDTH = W;
 
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
@@ -81,12 +100,6 @@ async function loadAssets(pathToAsset: string) {
 }
 
 async function init() {
-    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
-    const vh = window.innerHeight * 0.01;
-
-    // Then we set the value in the --vh custom property to the root of the document
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-
     const $el: HTMLDivElement | null = document.querySelector(
         AR_CONTAINER_SELECTOR,
     );
@@ -103,8 +116,8 @@ async function init() {
     });
 
     renderer.setClearColor(new THREE.Color('lightgrey'), 0);
-    renderer.setPixelRatio(1 / 2);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(1 / 1);
+    renderer.setSize(W, H);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0px';
     renderer.domElement.style.left = '0px';
@@ -113,7 +126,8 @@ async function init() {
         if (!$el) {
             return;
         }
-        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        renderer.setSize(W, W);
     }
 
     window.addEventListener('resize', updateRendererSize);
@@ -143,7 +157,11 @@ async function init() {
 
     const arToolkitSource = new Tx.ArToolkitSource({
         sourceType: 'webcam',
+        sourceWidth: SOURCE_WIDTH,
+        sourceHeight: SOURCE_HEIGHT,
 
+        displayWidth: DISPLAY_WIDTH,
+        displayHeight: DISPLAY_HEIGHT,
         // to read from an image
         // sourceType : 'image',
         // sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',
@@ -195,8 +213,8 @@ async function init() {
         detectionMode: 'mono_and_matrix',
         matrixCodeType: '3x3',
         maxDetectionRate: 5,
-        canvasWidth: 80 * 3,
-        canvasHeight: 60 * 3,
+        canvasWidth: CANVAS_WIDTH,
+        canvasHeight: CANVAS_HEIGHT,
     });
 
     //     arToolkitContext.arController.addEventListener('getMarker', (ev: any) => {
@@ -205,8 +223,10 @@ async function init() {
 
     // initialize it
     arToolkitContext.init(function onCompleted() {
+        const mat = arToolkitContext.getProjectionMatrix();
+        console.log('MATRIX', mat);
         // copy projection matrix to camera
-        camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+        camera.projectionMatrix.copy(mat);
     });
 
     // update artoolkit on every frame
