@@ -89,13 +89,13 @@ const CANVAS_WIDTH = W;
 
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
-    // {
-    //     path: 'models/LowPolyCharGreen.glb',
-    //     barcodeId: 0,
-    //     position: [2, 0, 4.5],
-    //     scale: MODEL_SCALE,
-    //     rotation: MODEL_ROTATION_SIDE_WAYS,
-    // },
+    {
+        path: 'models/LowPolyCharGreen.glb',
+        barcodeId: 1,
+        position: [2, 0, 4.5],
+        scale: MODEL_SCALE,
+        rotation: MODEL_ROTATION_SIDE_WAYS,
+    },
     {
         path: 'models/MTA_Platform_Spread.glb',
         barcodeId: 0,
