@@ -61,16 +61,7 @@ const THREEx = window.THREEx;
 const Tx = THREEx;
 const Stats = window.Stats;
 
-// Get window dimensions
-const W = window.innerWidth * window.devicePixelRatio;
-const H = window.innerHeight * window.devicePixelRatio;
-
-const W_SCALE = 1.0;
-const H_SCALE = 1.0;
-
 let loader;
-
-const ASPECT_RATIO = H / W;
 
 // const MODEL_PATH_GREEN = 'LowPolyChar.glb';
 // const MODEL_PATH_RED = 'LowPolyCharRed.glb';
@@ -79,15 +70,6 @@ const MODEL_SCALE: Vector3 = [0.2, 0.2, 0.2];
 const MODEL_ROTATION: Vector3 = [0, 0, 0];
 const MODEL_ROTATION_SIDE_WAYS: Vector3 = [4.5, 0, 0];
 const AR_CONTAINER_SELECTOR = '.ar-container';
-
-const DISPLAY_HEIGHT = H;
-const DISPLAY_WIDTH = W;
-
-const SOURCE_HEIGHT = H;
-const SOURCE_WIDTH = W;
-
-const CANVAS_HEIGHT = H;
-const CANVAS_WIDTH = W;
 
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
@@ -129,7 +111,16 @@ async function loadAssets(pathToAsset: string) {
     });
 }
 
-async function init() {
+async function init(WIDTH: number, HEIGHT: number) {
+    const DISPLAY_HEIGHT = HEIGHT;
+    const DISPLAY_WIDTH = WIDTH;
+
+    const SOURCE_HEIGHT = HEIGHT;
+    const SOURCE_WIDTH = WIDTH;
+
+    const CANVAS_HEIGHT = HEIGHT;
+    const CANVAS_WIDTH = WIDTH;
+
     const $el: HTMLDivElement | null = document.querySelector(
         AR_CONTAINER_SELECTOR,
     );
@@ -147,7 +138,7 @@ async function init() {
 
     renderer.setClearColor(new THREE.Color('lightgrey'), 0);
     renderer.setPixelRatio(1 / 1);
-    renderer.setSize(W, H);
+    renderer.setSize(WIDTH, HEIGHT);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0px';
     renderer.domElement.style.left = '0px';
@@ -157,7 +148,7 @@ async function init() {
             return;
         }
 
-        renderer.setSize(W, W);
+        renderer.setSize(WIDTH, HEIGHT);
     }
 
     window.addEventListener('resize', updateRendererSize);
@@ -254,7 +245,7 @@ async function init() {
     // initialize it
     arToolkitContext.init(function onCompleted() {
         const mat = arToolkitContext.getProjectionMatrix();
-        camera.aspect = W / H;
+        camera.aspect = WIDTH / HEIGHT;
         // copy projection matrix to camera
         camera.projectionMatrix.copy(mat);
     });
@@ -442,4 +433,13 @@ async function mountReact() {
 serviceWorker.unregister();
 
 mountReact();
-init();
+
+document.addEventListener('DOMContentLoaded', () => {
+    const $arContainer = document.querySelector(AR_CONTAINER_SELECTOR);
+    if ($arContainer) {
+        const width = $arContainer.clientWidth;
+        const height = $arContainer.clientHeight;
+        console.log('Docready', width, height);
+        init(width, height);
+    }
+});
