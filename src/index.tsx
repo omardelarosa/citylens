@@ -137,7 +137,7 @@ async function init(WIDTH: number, HEIGHT: number) {
     });
 
     renderer.setClearColor(new THREE.Color('lightgrey'), 0);
-    renderer.setPixelRatio(1 / 1);
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(WIDTH, HEIGHT);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0px';
