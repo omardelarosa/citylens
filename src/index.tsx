@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+
 import * as serviceWorker from './serviceWorker';
 const queryString = require('query-string');
 
@@ -33,18 +34,23 @@ interface IMesh {
     animations?: any[];
 }
 
-type IClip = any;
+interface IClip {}
 
 interface IAnimation {
     play: () => void;
+    setLoop: (n: number, t?: number) => void;
+    isRunning: () => boolean;
 }
 
 interface IAnimationMixer {
     clipAction: (a: IClip) => IAnimation;
     update: (d: number) => void;
+    time: number;
+    addEventListener: (s: string, cb: (e: IAnimation) => void) => void;
 }
 
 declare let window: CustomWindow;
+
 const AFRAME = window.AFRAME;
 const THREE = window.THREE;
 const AF = AFRAME;
@@ -83,16 +89,16 @@ const CANVAS_WIDTH = W;
 
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
-    {
-        path: 'models/LowPolyCharGreen.glb',
-        barcodeId: 0,
-        position: [2, 0, 4.5],
-        scale: MODEL_SCALE,
-        rotation: MODEL_ROTATION_SIDE_WAYS,
-    },
+    // {
+    //     path: 'models/LowPolyCharGreen.glb',
+    //     barcodeId: 0,
+    //     position: [2, 0, 4.5],
+    //     scale: MODEL_SCALE,
+    //     rotation: MODEL_ROTATION_SIDE_WAYS,
+    // },
     {
         path: 'models/MTA_Platform_Spread.glb',
-        barcodeId: 1,
+        barcodeId: 0,
         position: [0, 1, 4.5],
         scale: MODEL_SCALE,
         rotation: MODEL_ROTATION_SIDE_WAYS,
@@ -247,6 +253,7 @@ async function init() {
     arToolkitContext.init(function onCompleted() {
         const mat = arToolkitContext.getProjectionMatrix();
         console.log('MATRIX', mat);
+        camera.aspect = W / H;
         // copy projection matrix to camera
         camera.projectionMatrix.copy(mat);
     });
@@ -323,24 +330,32 @@ async function init() {
             return mConfig;
         }
 
+        /*
+         * Animation based on:
+         *
+         * https://threejs.org/docs/#manual/en/introduction/Animation-system
+         *
+         */
         let mixer: IAnimationMixer | null = null;
+        let clips: IAnimation[] = [];
+        let action: IAnimation | null = null;
         // Play first animation
         if (mesh.animations && mesh.animations.length && animationName) {
-            mixer = new THREE.AnimationMixer(mesh);
-            const clip = THREE.AnimationClip.findByName(
-                mesh.animations,
-                animationName,
-            );
-            console.log(
-                'Using Animation: ',
-                animationName,
-                ' for mesh: ',
-                mConfig,
-            );
+            mixer = new THREE.AnimationMixer(mesh.scene);
             if (mixer) {
-                const action = mixer.clipAction(clip);
-                action.play();
+                mixer.addEventListener('loop', function(e) {
+                    console.log('Loop finished: ', e);
+                });
             }
+            mesh.animations.forEach((clip: IClip, idx: number) => {
+                if (mixer) {
+                    const action = mixer.clipAction(clip);
+                    action.play();
+                    action.setLoop(THREE.LoopRepeat);
+                } else {
+                    console.warn('No mixer for animation!');
+                }
+            });
         }
 
         // Step through animation
@@ -350,10 +365,19 @@ async function init() {
             // mesh.scene.rotation.x += 0.1;
             // mesh.scene.rotation.y += 0.1;
             // TODO: Complete playing the animation
-            // console.log('Delta', delta);
-            // if (mixer) {
-            //     mixer.update(delta);
-            // }
+            if (mixer) {
+                mixer.update(delta);
+            }
+            if (mesh.animations && mesh.animations.length) {
+                // TODO: do stuff on each frame?
+                // mesh.animations.forEach((clip: IClip) => {
+                //     if (mixer) {
+                //         const action: IAnimation = mixer.clipAction(clip);
+                //         // console.log('IsRunning: ', action.isRunning(), clip);
+                //         // action.play();
+                //     }
+                // });
+            }
         });
 
         return mConfig;
