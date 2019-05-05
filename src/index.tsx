@@ -62,8 +62,8 @@ const Tx = THREEx;
 const Stats = window.Stats;
 
 // Get window dimensions
-const W = window.innerWidth;
-const H = window.innerHeight;
+const W = window.innerWidth * window.devicePixelRatio;
+const H = window.innerHeight * window.devicePixelRatio;
 
 const W_SCALE = 1.0;
 const H_SCALE = 1.0;
