@@ -22,7 +22,7 @@ interface IModelConfig {
     position: Vector3; // Relative space offset Vector3
     scale: Vector3; // x, y, z scale
     rotation: Vector3; // x, y, z
-    animationName?: string;
+    animationNames?: string[];
 }
 
 interface IMesh {
@@ -34,7 +34,9 @@ interface IMesh {
     animations?: any[];
 }
 
-interface IClip {}
+interface IClip {
+    name: string;
+}
 
 interface IAnimation {
     play: () => void;
@@ -90,19 +92,19 @@ const CANVAS_WIDTH = W;
 // Define all models and their respective barcodes here
 const MODEL_MAPPINGS: IModelConfig[] = [
     {
-        path: 'models/LowPolyCharGreen.glb',
-        barcodeId: 1,
-        position: [2, 0, 4.5],
-        scale: MODEL_SCALE,
-        rotation: MODEL_ROTATION_SIDE_WAYS,
-    },
-    {
-        path: 'models/MTA_Platform_Spread.glb',
+        path: 'models/MTA_Platform_Stand.glb',
         barcodeId: 0,
         position: [0, 1, 4.5],
         scale: MODEL_SCALE,
-        rotation: MODEL_ROTATION_SIDE_WAYS,
-        animationName: 'Spread',
+        rotation: [4.5, -2.5, 0],
+        // rotation: MODEL_ROTATION_SIDE_WAYS,
+    },
+    {
+        path: 'models/MTA_Platform_Spread.glb',
+        barcodeId: 1,
+        position: [0, 1, 4.5],
+        scale: MODEL_SCALE,
+        rotation: [4.5, 0, 0],
     },
 ];
 
@@ -252,7 +254,6 @@ async function init() {
     // initialize it
     arToolkitContext.init(function onCompleted() {
         const mat = arToolkitContext.getProjectionMatrix();
-        console.log('MATRIX', mat);
         camera.aspect = W / H;
         // copy projection matrix to camera
         camera.projectionMatrix.copy(mat);
@@ -277,7 +278,7 @@ async function init() {
             scale: [scaleX, scaleY, scaleZ],
             rotation: [rotX, rotY, rotZ],
             position: [posX, posY, posZ],
-            animationName,
+            animationNames,
         } = mConfig;
         const markerRoot = new T.Group();
         scene.add(markerRoot);
@@ -339,15 +340,20 @@ async function init() {
         let mixer: IAnimationMixer | null = null;
         let clips: IAnimation[] = [];
         let action: IAnimation | null = null;
+        const animations = (mesh.animations || []).filter((clip: IClip) => {
+            if (!animationNames) return true; // Use all animations
+            return animationNames.includes(clip.name);
+        });
+        console.log('Mesh Animations: ', mesh.animations);
         // Play first animation
-        if (mesh.animations && mesh.animations.length && animationName) {
+        if (animations && animations.length) {
             mixer = new THREE.AnimationMixer(mesh.scene);
             if (mixer) {
-                mixer.addEventListener('loop', function(e) {
-                    console.log('Loop finished: ', e);
-                });
+                // mixer.addEventListener('loop', function(e) {
+                //     console.log('Loop finished: ', e);
+                // });
             }
-            mesh.animations.forEach((clip: IClip, idx: number) => {
+            animations.forEach((clip: IClip, idx: number) => {
                 if (mixer) {
                     const action = mixer.clipAction(clip);
                     action.play();
