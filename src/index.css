@@ -44,6 +44,16 @@ html {
     padding: 5px 15px 5px 15px;
 }
 
+.App .photoIcon {
+    width: 40px;
+    height: 40px;
+}
+
+.photoIcon {
+    -webkit-filter: invert(100%); /* safari 6.0 - 9.0 */
+    filter: invert(100%);
+}
+
 .App h1.expanded {
 }
 

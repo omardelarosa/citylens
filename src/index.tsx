@@ -12,6 +12,7 @@ interface CustomWindow extends Window {
     THREEx: any; // JS ARToolkit
     Stats: any; // ThreeJS Stats plugin
     ARController: any; // jsartoolkit5
+    ARReset: () => void; // resets AR
 }
 
 type Vector3 = [number, number, number]; // x, y, z
@@ -441,5 +442,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const height = $arContainer.clientHeight;
         console.log('Docready', width, height);
         init(width, height);
+
+        // Create public callback for reseting
+        window.ARReset = () => {
+            $arContainer.innerHTML = '';
+            init(width, height);
+        };
     }
 });
