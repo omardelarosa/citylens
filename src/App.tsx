@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
+import { CustomWindow } from '../typings/window';
+
+declare let window: CustomWindow;
 
 const APP_TITLE = 'MTA tips';
 const AUTHOR_URL = 'https://omardelarosa.com';
+const GITHUB_URL = 'https://github.com/omardelarosa/citylens';
 
-interface CustomWindow {
-    ARReset: () => void;
-}
-
-declare let window: CustomWindow;
+const YOUTUBE_IFRAME =
+    '<iframe src="https://www.youtube.com/embed/QVppPxScGUE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
 
 interface IAppState {
     isExpanded?: boolean;
@@ -15,6 +16,34 @@ interface IAppState {
 }
 
 interface IAppProps {}
+
+function AuthorLink(props: {}) {
+    return <a href={AUTHOR_URL}>omar delarosa</a>;
+}
+
+function GithubLink(props: {}) {
+    return <a href={GITHUB_URL}>Github Source</a>;
+}
+
+function AboutContainer(props: {}) {
+    return (
+        <div className="about-container">
+            <h3>About</h3>
+            <div className="description u-m-b-1">
+                The CityLens project is a prototype built by {<AuthorLink />}{' '}
+                for a web-based system of AR experiences that can be deployed
+                across an urban setting with maximum device accessibility and
+                minimal setup costs.
+            </div>
+            <div className="links u-m-b-1">
+                <GithubLink />
+            </div>
+            <div className="iframe-container flexy-container">
+                <span dangerouslySetInnerHTML={{ __html: YOUTUBE_IFRAME }} />
+            </div>
+        </div>
+    );
+}
 
 class App extends Component<IAppState, IAppProps> {
     public readonly state = {
@@ -43,7 +72,6 @@ class App extends Component<IAppState, IAppProps> {
             hasSnappedPhoto: true,
         });
 
-        console.log('Saving photo!');
         const canvas = document.querySelector('canvas');
         const $ar = document.querySelector('.ar-container');
         const $video = document.querySelector('video');
@@ -127,17 +155,7 @@ class App extends Component<IAppState, IAppProps> {
                         {APP_TITLE}
                     </span>
                 </h1>
-                {!isExpanded ? null : (
-                    <h2 className="info-box flexy-container">
-                        <span />
-                        <span>
-                            by{' '}
-                            <a href={AUTHOR_URL} target="_blank">
-                                omar delarosa
-                            </a>
-                        </span>
-                    </h2>
-                )}
+                {!isExpanded ? null : <AboutContainer />}
             </div>
         );
     }

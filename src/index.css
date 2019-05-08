@@ -60,11 +60,30 @@ html {
 .App h1.collapsed {
 }
 
+.u-m-b-1 {
+    margin-bottom: 15px;
+}
+
+.about-container {
+    padding: 15px;
+}
+
+.links {
+    text-align: center;
+}
+
 .flexy-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     margin: 0;
+}
+
+.iframe-container {
+    justify-content: space-around;
+}
+
+.iframe-container iframe {
 }
 
 .collapsed .toggleButton {

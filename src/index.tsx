@@ -2,18 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-
+import { CustomWindow } from '../typings/window';
 import * as serviceWorker from './serviceWorker';
 const queryString = require('query-string');
-
-interface CustomWindow extends Window {
-    AFRAME: any; // A Frame library loaded from static template
-    THREE: any;
-    THREEx: any; // JS ARToolkit
-    Stats: any; // ThreeJS Stats plugin
-    ARController: any; // jsartoolkit5
-    ARReset: () => void; // resets AR
-}
 
 type Vector3 = [number, number, number]; // x, y, z
 

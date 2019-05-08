@@ -1,3 +1,22 @@
+# CityLens
+
+The CityLens project is a prototype built by [omar delarosa](https://omardelarosa.com)
+for a web-based system of AR experiences that can be deployed
+across an urban setting with maximum device accessibility and
+minimal setup costs.
+
+## Installation
+
+This project was adapted from [Jerome Etienne's AR.js project](https://github.com/jeromeetienne/AR.js). For the most part it works in the exact same way. The markers for testing can be found in the `/designs` directory as PDFs.
+
+To test this out:
+
+1. Open [a marker pattern](https://github.com/omardelarosa/citylens/blob/master/designs/marker_pattern_1.pdf) in a browser window.
+2. Open the [Test App](https://mta.view.tips) in another window.
+3. Allow Camera access and point the camera at the tab with the marker.
+
+## Running The Dev Server Locally
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
